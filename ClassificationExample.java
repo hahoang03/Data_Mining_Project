@@ -10,7 +10,7 @@ public class ClassificationExample {
 
     public static void main(String[] args) throws Exception {
         // 1. Load dataset từ file ARFF
-=        DataSource source = new DataSource("data/dataset.arff");
+        DataSource source = new DataSource("data/dataset.arff");
         Instances dataset = source.getDataSet();
 
         // 2. Nếu dataset chưa có class index (label), đặt class index là cột cuối
