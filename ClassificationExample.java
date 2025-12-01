@@ -26,7 +26,7 @@ public class ClassificationExample {
 
         // 5. Đánh giá model bằng 10-fold cross-validation
         Evaluation eval = new Evaluation(dataset);
-        eval.crossValidateModel(model, dataset, 1, new Random(1));
+        eval.crossValidateModel(model, dataset, 10, new Random(1));
 
         // 6. In kết quả
         System.out.println("=== Summary ===");
