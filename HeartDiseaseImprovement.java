@@ -4,8 +4,9 @@ import weka.filters.Filter;
 import weka.filters.unsupervised.attribute.PrincipalComponents;
 import weka.clusterers.SimpleKMeans;
 import weka.classifiers.trees.RandomForest;
-import weka.classifiers.functions.Logistic;
 import weka.classifiers.Evaluation;
+import weka.classifiers.functions.SMO;
+
 
 import java.util.Random;
 
@@ -14,77 +15,87 @@ public class HeartDiseaseImprovement {
     public static void main(String[] args) throws Exception {
 
         // ====== LOAD DATASET ======
-        DataSource source = new DataSource("heart_disease.arff");  // đổi file bạn vào
+        DataSource source = new DataSource("data/heart_transformed.arff");
         Instances data = source.getDataSet();
-        data.setClassIndex(data.numAttributes() - 1); // Assume last column is target
 
+        // --- Set class là cột cuối ---
+        data.setClassIndex(data.numAttributes() - 1);
+
+        // --- Tạo dataset chỉ chứa features numeric (bỏ class cuối) ---
+        Instances features = new Instances(data);
+        features.setClassIndex(-1); // bỏ class để PCA không chạy trên class
+        features.deleteAttributeAt(data.classIndex()); // xóa cột class khỏi features
 
         // =====================================================================
         // 1) PCA – DIMENSIONALITY REDUCTION
         // =====================================================================
         PrincipalComponents pca = new PrincipalComponents();
-        pca.setVarianceCovered(0.95);  // giữ 95% phương sai
-        pca.setMaximumAttributes(5);   // giảm xuống khoảng 5 features
-        pca.setInputFormat(data);
+        pca.setVarianceCovered(0.95);
+        pca.setMaximumAttributes(5);
+        pca.setInputFormat(features);
 
-        Instances pcaData = Filter.useFilter(data, pca);
-        pcaData.setClassIndex(pcaData.numAttributes() - 1);
+        Instances pcaFeatures = Filter.useFilter(features, pca);
 
+        // --- Thêm lại cột class vào PCA dataset ---
+        pcaFeatures.insertAttributeAt(data.classAttribute(), pcaFeatures.numAttributes());
+        pcaFeatures.setClassIndex(pcaFeatures.numAttributes() - 1);
+
+        for (int i = 0; i < pcaFeatures.numInstances(); i++) {
+            pcaFeatures.instance(i).setClassValue(data.instance(i).classValue());
+        }
 
         // =====================================================================
         // 2) K-MEANS CLUSTERING – ADD CLUSTER LABEL AS NEW FEATURE
         // =====================================================================
         SimpleKMeans kmeans = new SimpleKMeans();
         kmeans.setNumClusters(3);
-        kmeans.buildClusterer(data);
+        kmeans.setPreserveInstancesOrder(true);
+        kmeans.buildClusterer(features);
 
-        // Thêm cluster label vào data
-        Instances clusteredData = new Instances(data);
         int[] assignments = kmeans.getAssignments();
 
-        // thêm thuộc tính cluster
+        Instances clusteredData = new Instances(data);
         clusteredData.insertAttributeAt(new weka.core.Attribute("cluster_label"), clusteredData.numAttributes());
 
         for (int i = 0; i < clusteredData.numInstances(); i++) {
             clusteredData.instance(i).setValue(clusteredData.numAttributes() - 1, assignments[i]);
         }
-
-        clusteredData.setClassIndex(clusteredData.numAttributes() - 2); // class trước cluster
-
+        clusteredData.setClassIndex(data.classIndex());
 
         // =====================================================================
-        // 3) MODEL TRAINING
+        // 3) MODEL TRAINING + EVALUATION WITH RUNTIME
         // =====================================================================
-        RandomForest baseRF = new RandomForest();
-        Logistic baseLR = new Logistic();
-
-        RandomForest improvedRF = new RandomForest();
-        Logistic improvedLR = new Logistic();
+        //randomForest rf = new RandomForest();
+        SMO smo = new SMO();
 
 
-        // --- Evaluate baseline on original data ---
-        Evaluation baseEval = new Evaluation(data);
-        baseEval.crossValidateModel(baseRF, data, 10, new Random(1));
+        // --- PCA dataset ---
+        long startPCA = System.currentTimeMillis();
+        Evaluation pcaEval = new Evaluation(pcaFeatures);
+        //pcaEval.crossValidateModel(rf, pcaFeatures, 10, new Random(1));
+        pcaEval.crossValidateModel(smo, pcaFeatures, 10, new Random(1));
+        long endPCA = System.currentTimeMillis();
 
-        // --- Evaluate improved model on PCA data ---
-        Evaluation pcaEval = new Evaluation(pcaData);
-        pcaEval.crossValidateModel(improvedRF, pcaData, 10, new Random(1));
-
-        // --- Evaluate improved model on KMeans-enhanced data ---
+        // --- Cluster dataset ---
+        long startCluster = System.currentTimeMillis();
         Evaluation clusterEval = new Evaluation(clusteredData);
-        clusterEval.crossValidateModel(improvedRF, clusteredData, 10, new Random(1));
-
+        //clusterEval.crossValidateModel(rf, clusteredData, 10, new Random(1));
+        clusterEval.crossValidateModel(smo, clusteredData, 10, new Random(1));
+        long endCluster = System.currentTimeMillis();
 
         // =====================================================================
         // 4) PRINT RESULTS
         // =====================================================================
-        System.out.println("===== BASE MODEL (RandomForest) ON ORIGINAL DATA =====");
-        System.out.println(baseEval.toSummaryString());
-
-        System.out.println("===== IMPROVED MODEL ON PCA DATA =====");
+        System.out.println("===== MODEL ON PCA DATA =====");
         System.out.println(pcaEval.toSummaryString());
+        System.out.printf("Accuracy: %.4f\n", 1 - pcaEval.errorRate());
+        System.out.printf("F1-score (weighted): %.4f\n", pcaEval.weightedFMeasure());
+        System.out.println("Runtime: " + (endPCA - startPCA) + " ms\n");
 
-        System.out.println("===== IMPROVED MODEL WITH KMEANS CLUSTER FEATURE =====");
+        System.out.println("===== MODEL WITH KMEANS CLUSTER FEATURE =====");
         System.out.println(clusterEval.toSummaryString());
+        System.out.printf("Accuracy: %.4f\n", 1 - clusterEval.errorRate());
+        System.out.printf("F1-score (weighted): %.4f\n", clusterEval.weightedFMeasure());
+        System.out.println("Runtime: " + (endCluster - startCluster) + " ms");
     }
 }
