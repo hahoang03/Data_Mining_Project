@@ -58,7 +58,7 @@ The dataset contains:
   - Mutual Information was used to measure the relationship between features and the target variable
 
 ---
-🔄 Converting CSV to ARFF (for WEKA)
+##  🔄 Converting CSV to ARFF 
 
 Since WEKA requires data in ARFF format, the processed dataset was converted from CSV to ARFF using a Python script.
 The conversion process includes the following steps:
