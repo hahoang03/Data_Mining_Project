@@ -7,7 +7,7 @@
 
 ---
 
-## Project Overview
+## 📌 Project Overview
 This project was conducted as part of the **Data Mining (IT160IU)** course at **Vietnam National University – Ho Chi Minh City, International University**.  
 The main purpose of this study is to analyze and handle class imbalance in a heart disease dataset using data mining techniques, and to evaluate how data balancing affects classification performance.
 
@@ -15,7 +15,7 @@ The dataset includes multiple health, lifestyle, and medical risk factors. Due t
 
 ---
 
-## Objectives
+## 🎯 Objectives
 - Perform data preprocessing on a heart disease dataset  
 - Handle missing values, duplicates, and outliers  
 - Transform data using normalization and encoding  
@@ -25,7 +25,7 @@ The dataset includes multiple health, lifestyle, and medical risk factors. Due t
 
 ---
 
-## Dataset
+## 📂 Dataset
 - **Source**: Kaggle – Heart Disease Dataset (by Oktay Rdeki)  
 - **Origin**: Derived from the UCI Cleveland Heart Disease Dataset  
 - **Number of instances**: 10,000  
@@ -39,7 +39,7 @@ The dataset contains:
 
 ---
 
-## Data Preprocessing
+## 🔧 Data Preprocessing
 
 ### Data Cleaning
 - Missing values were detected and handled based on variable types:
@@ -58,15 +58,27 @@ The dataset contains:
   - Mutual Information was used to measure the relationship between features and the target variable
 
 ---
+🔄 Converting CSV to ARFF (for WEKA)
 
-## Handling Class Imbalance
+Since WEKA requires data in ARFF format, the processed dataset was converted from CSV to ARFF using a Python script.
+The conversion process includes the following steps:
+- Load the final CSV file after SMOTE and feature selection using Pandas
+- Explicitly define attribute types (numeric, binary, ordinal, and target)
+- Convert categorical values into string format to match WEKA’s nominal requirements
+- Reorder attributes to ensure consistency with WEKA experiments
+- Export the dataset into an .arff file using the liac-arff library
+
+This step ensures that the dataset is fully compatible with WEKA and preserves the correct attribute order and data types for classification.
+---
+
+## ⚖️ Handling Class Imbalance
 The original dataset is highly imbalanced, causing classifiers to predict only the majority class and resulting in high accuracy but very low Kappa values.
 
 To address this problem, **SMOTE** was applied to generate synthetic samples for the minority class. This helps classifiers learn meaningful patterns instead of relying on class distribution.
 
 ---
 
-## Classification Models
+## 🤖 Classification Models
 The following classifiers were implemented using **WEKA**:
 - J48 Decision Tree  
 - Naive Bayes  
@@ -77,7 +89,7 @@ All models were evaluated using **Stratified 10-Fold Cross-Validation**.
 
 ---
 
-## Evaluation Metrics
+## 📊 Evaluation Metrics
 The models were evaluated using:
 - Accuracy  
 - F1-Score  
@@ -88,7 +100,7 @@ Kappa Statistic and F1-Score were emphasized since accuracy alone is not reliabl
 
 ---
 
-## Results Summary
+## 🏆 Results Summary
 - Before applying SMOTE:
   - Accuracy was around 80% for most classifiers
   - Kappa value was close to 0, indicating majority-class bias
@@ -101,14 +113,40 @@ Kappa Statistic and F1-Score were emphasized since accuracy alone is not reliabl
 
 ---
 
-## Tools and Technologies
+## 📁 Project Structure
+Data_Mining_Project/
+│
+├── data/
+│ ├── heart.csv
+│ ├── heart_filled.csv
+│ ├── heart_smote.csv
+│ └── heart_smote_selected.csv
+│
+├── data_preprocessing/
+│ ├── data_cleaning/
+│ ├── data_transformation/
+│ └── improve/
+│
+├── data_prepration/
+│ └──csvtoarff.py
+├── J48_Classification.java
+├── NaiveBayes_Classification.java
+├── RandomForest_Classification.java
+├── SMO_Classification.java
+│
+└── README.md
+
+---
+
+## 🛠 Tools and Technologies
 - Python (Pandas, Scikit-learn)
-- WEKA
-- Jupyter Notebook
+- Java
+- WEKA Library
+- VS Code
 - Git & GitHub
 
 ---
 
 
-## References
+## 📚 References
 Please refer to the References section in the project report for detailed academic sources related to SMOTE, heart disease prediction, and machine learning techniques.
