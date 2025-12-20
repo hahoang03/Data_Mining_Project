@@ -69,6 +69,7 @@ The conversion process includes the following steps:
 - Export the dataset into an .arff file using the liac-arff library
 
 This step ensures that the dataset is fully compatible with WEKA and preserves the correct attribute order and data types for classification.
+
 ---
 
 ## ⚖️ Handling Class Imbalance
@@ -110,31 +111,6 @@ Kappa Statistic and F1-Score were emphasized since accuracy alone is not reliabl
     - Accuracy: 83.38%
     - F1-Score: 0.8326
     - Kappa: 0.6675
-
----
-
-## 📁 Project Structure
-Data_Mining_Project/
-│
-├── data/
-│ ├── heart.csv
-│ ├── heart_filled.csv
-│ ├── heart_smote.csv
-│ └── heart_smote_selected.csv
-│
-├── data_preprocessing/
-│ ├── data_cleaning/
-│ ├── data_transformation/
-│ └── improve/
-│
-├── data_prepration/
-│ └──csvtoarff.py
-├── J48_Classification.java
-├── NaiveBayes_Classification.java
-├── RandomForest_Classification.java
-├── SMO_Classification.java
-│
-└── README.md
 
 ---
 
